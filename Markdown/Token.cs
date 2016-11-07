@@ -3,14 +3,14 @@
     public class Token
     {
         public readonly string String;
-        public readonly int start;
-        public readonly int finish;
+        public readonly int StartPosition;
+        public readonly int FinishPosition;
 
-        public Token(string s, int start)
+        public Token(string text, int start)
         {
-            String = s;
-            this.start = start;
-            finish = start + s.Length;
+            String = text;
+            StartPosition = start;
+            FinishPosition = start + text.Length;
         }
     }
 }
