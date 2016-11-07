@@ -49,6 +49,9 @@
   <ItemGroup>
     <Compile Include="Md.cs" />
     <Compile Include="Program.cs" />
+    <Compile Include="Token.cs" />
+    <Compile Include="TokenReader.cs" />
+    <Compile Include="TokenReaderExtensions.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="App.config" />

@@ -10,7 +10,7 @@ namespace Markdown
 		}
 	}
 
-	[TestFixture]
+    [TestFixture]
 	public class Md_ShouldRender
 	{
 	}
