@@ -50,6 +50,7 @@
     <Compile Include="Md.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="Token.cs" />
+    <Compile Include="TokenExtensions.cs" />
     <Compile Include="TokenReader.cs" />
     <Compile Include="TokenReaderExtensions.cs" />
   </ItemGroup>
