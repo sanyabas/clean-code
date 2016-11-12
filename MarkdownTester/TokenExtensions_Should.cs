@@ -14,7 +14,7 @@ namespace MarkdownTester
         {
             var token = new Token(text, 0);
             var result = token.SurroundWithHtmlTag(tag);
-            result.String.Should().Be(expected);
+            result.Text.Should().Be(expected);
         }
     }
 }

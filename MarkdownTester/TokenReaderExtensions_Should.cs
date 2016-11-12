@@ -15,7 +15,7 @@ namespace MarkdownTester
         {
             var reader = new TokenReader(text);
             var result = reader.ReadSimpleToken();
-            result.String.Should().Be(expected);
+            result.Text.Should().Be(expected);
         }
 
         [Test]
@@ -25,7 +25,25 @@ namespace MarkdownTester
         {
             var reader = new TokenReader(text);
             var result = reader.ReadItalicToken();
-            result.String.Should().Be(expected);
+            result.Text.Should().Be(expected);
+        }
+
+        [Test]
+        [TestCase(@"\_qweqwe\_", "_qweqwe_")]
+        public void ExtractShadedToken(string text, string expected)
+        {
+            var reader = new TokenReader(text);
+            var result = reader.SkipShadedToken();
+            result.Text.Should().Be(expected);
+        }
+
+        [Test]
+        [TestCase("__Strong text__", "Strong text")]
+        public void ExtractBoldToken_FromSimpleText(string text, string expected)
+        {
+            var reader = new TokenReader(text);
+            var result = reader.ReadBoldToken();
+            result.Text.Should().Be(expected);
         }
 
         [Test]
@@ -34,7 +52,25 @@ namespace MarkdownTester
         public void ExtractTokens_FromSimpleText(string text, params string[] expected)
         {
             var reader = new TokenReader(text);
-            var result = reader.ReadTokens().Select(x => x.String);
+            var result = reader.ReadTokens().Select(x => x.Text);
+            result.Should().BeEquivalentTo(expected);
+        }
+
+        [Test]
+        [TestCase(@"This is \_shadowed\_ text", "This is ", "_shadowed_", " text")]
+        public void NotExtract_ShadedItalic(string text, params string[] expected)
+        {
+            var reader = new TokenReader(text);
+            var result = reader.ReadTokens().Select(x => x.Text);
+            result.Should().BeEquivalentTo(expected);
+        }
+
+        [Test]
+        [TestCase(@"Very __very__ bold __text__", "Very ", "<strong>very</strong>", " bold ", "<strong>text</strong>")]
+        public void ExtractBoldTokens_SimpleCase(string text, params string[] expected)
+        {
+            var reader= new TokenReader(text);
+            var result = reader.ReadTokens().Select(x => x.Text);
             result.Should().BeEquivalentTo(expected);
         }
     }

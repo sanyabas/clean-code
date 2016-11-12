@@ -16,7 +16,7 @@ namespace MarkdownTester
         public void ReadUntil_SpecifiedCharacter(string input, string expectedText, int expectedPosition, params char[] stopChars)
         {
             var reader = new TokenReader(input);
-            var result = reader.ReadUntil(0, stopChars);
+            var result = reader.ReadUntil(0, false, stopChars);
             var expected = new Token(expectedText,expectedPosition);
             result.Should().Be(expected);
         }

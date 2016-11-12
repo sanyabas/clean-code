@@ -2,20 +2,20 @@
 {
     public class Token
     {
-        public string String { get; }
+        private readonly int finishPosition;
+        public string Text { get; }
         public int StartPosition { get; }
-        public int FinishPosition { get; }
 
         public Token(string text, int start)
         {
-            String = text;
+            Text = text;
             StartPosition = start;
-            FinishPosition = start + text.Length;
+            finishPosition = start + text.Length;
         }
 
         public override string ToString()
         {
-            return $"[{StartPosition}:{FinishPosition}] {String}";
+            return $"[{StartPosition}:{finishPosition}] {Text}";
         }
 
         public override bool Equals(object obj)
@@ -23,12 +23,12 @@
             if (!(obj is Token))
                 return false;
             var other = (Token)obj;
-            return String == other.String && StartPosition == other.StartPosition;
+            return Text == other.Text && StartPosition == other.StartPosition;
         }
 
         public override int GetHashCode()
         {
-            return String.GetHashCode();
+            return Text.GetHashCode();
         }
     }
 }

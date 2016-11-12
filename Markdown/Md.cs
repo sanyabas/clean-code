@@ -1,7 +1,4 @@
 ﻿using System.Linq;
-using System.Runtime.InteropServices;
-using NUnit.Framework;
-using static System.String;
 
 namespace Markdown
 {
@@ -11,8 +8,8 @@ namespace Markdown
         public string RenderToHtml(string markdown)
         {
             tokenizer = new TokenReader(markdown);
-            var result = tokenizer.ReadTokens().Select(token => token.String);
-            return Join("", result);
+            var result = tokenizer.ReadTokens().Select(token => token.Text);
+            return string.Join("", result);
         }
     }
 

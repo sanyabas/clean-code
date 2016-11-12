@@ -5,7 +5,7 @@
         public static Token SurroundWithHtmlTag(this Token token, string tag)
         {
             var closingTag = tag[0] + @"/" + tag.Substring(1);
-            var resultText = $"{tag}{token.String}{closingTag}";
+            var resultText = $"{tag}{token.Text}{closingTag}";
             return new Token(resultText,token.StartPosition);
         }
     }
