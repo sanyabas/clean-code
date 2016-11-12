@@ -6,6 +6,8 @@
         public string Text { get; }
         public int StartPosition { get; }
 
+        public string HtmlTag { get; }
+
         public Token(string text, int start)
         {
             Text = text;
