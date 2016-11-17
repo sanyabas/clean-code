@@ -15,7 +15,7 @@ namespace MarkdownTester
 
         private Md renderer;
         private const int PerfomanceStep=1000;
-        private const double LinearBound = 3;
+        private const double LinearBound = 1;
 
         [SetUp]
         public void SetUp()
@@ -59,7 +59,18 @@ namespace MarkdownTester
         }
 
         [Test]
-        public void PerfomanceTest()
+        public void AbsoluteAndRelativeHttpLinks()
+        {
+            var input = @"This is [absolute link](http://google.com/pictures) and [relative](/pictures.html) link";
+            renderer.BaseAddress = "http://yandex.ru/";
+            var expected =
+                "This is <a href=\"http://google.com/pictures\">absolute link</a> and <a href=\"http://yandex.ru/pictures.html\">relative</a> link";
+            var result = renderer.RenderToHtml(input);
+            result.Should().Be(expected);
+        }
+
+        [Test]
+        public void Linearly()
         {
             var input = "_italic_ and __bold text__";
             var results = new List<double>();
@@ -85,10 +96,11 @@ namespace MarkdownTester
 
         private void CheckLinearity(double[] results, int argDelta)
         {
-            var firstDerivative = GetDeltas(results, argDelta);
-            firstDerivative.Average().Should().BeInRange(-LinearBound, LinearBound);
+            var firstDerivative = GetDerivative(results, argDelta);
+            var secondDerivative = GetDerivative(firstDerivative, argDelta);
+            secondDerivative.Average().Should().BeInRange(-LinearBound, LinearBound);
         }
-        private double[] GetDeltas(double[] results, int argDelta)
+        private double[] GetDerivative(double[] results, int argDelta)
         {
             var result=new List<double>();
             for (var i = 0; i < results.Length-2; i++)

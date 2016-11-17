@@ -35,5 +35,14 @@ namespace MarkdownTester
             var result = reader.ReadTokens().Select(x => x.Text);
             result.Should().BeEquivalentTo(expected);
         }
+
+        [Test]
+        [TestCase(@"This is [absolute](http://google.com) link", "This is ", "<a href=\"http://google.com\">absolute</a>", " link")]
+        public void ExtractAbsoluteHttpLinks(string text, params string[] expected)
+        {
+            var reader = new TokenReader(text);
+            var result = reader.ReadTokens().Select(x => x.Text);
+            result.Should().BeEquivalentTo(expected);
+        }
     }
 }

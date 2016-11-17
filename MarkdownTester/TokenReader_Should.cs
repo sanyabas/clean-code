@@ -29,7 +29,7 @@ namespace MarkdownTester
 
         [Test]
         [TestCase(@"\_qweqwe\_", "_qweqwe_")]
-        public void ExtractShadedToken(string text, string expected)
+        public void ExtractScreenedToken(string text, string expected)
         {
             var reader = new TokenReader(text);
             var result = reader.SkipShadedToken();
@@ -56,6 +56,44 @@ namespace MarkdownTester
             var reader = new TokenReader(input);
             var result = reader.ReadUntil(0, false, stopChars);
             var expected = new Token(expectedText,expectedPosition);
+            result.Should().Be(expected);
+        }
+
+        [Test]
+        public void Extract_AbsoluteHTTPLink()
+        {
+            var reader=new TokenReader(@"[absolute link](http://google.com)");
+            var result = reader.ReadLink();
+            var expected = new Token(@"absolute link",0)
+            {
+                HtmlTag = @"<a>",
+                HtmlAttribute = "href=\"http://google.com\""
+            };
+            result.Should().Be(expected);
+        }
+
+        [Test]
+        public void Extract_RelativeHTTPLink()
+        {
+            var reader = new TokenReader(@"[relative link](/src)", "http://google.com");
+            var result = reader.ReadLink();
+            var expected = new Token("relative link", 0)
+            {
+                HtmlTag="<a>",
+                HtmlAttribute = "href=\"http://google.com/src\""
+            };
+            result.Should().Be(expected);
+        }
+
+        [Test]
+        [TestCase("http://google.com/","search", "http://google.com/search")]
+        [TestCase("http://google.com/","/search", "http://google.com/search")]
+        [TestCase("http://google.com","/search", "http://google.com/search")]
+        [TestCase("http://google.com","search", "http://google.com/search")]
+        public void Combine_URLs(string baseUrl, string relative, string expected)
+        {
+            var reader = new TokenReader(null);
+            var result = reader.CombineUrl(baseUrl, relative);
             result.Should().Be(expected);
         }
     }

@@ -6,7 +6,8 @@
         public string Text { get; }
         public int StartPosition { get; }
 
-        public string HtmlTag { get; }
+        public string HtmlTag { get; set; }
+        public string HtmlAttribute { get; set; }
 
         public Token(string text, int start)
         {
@@ -25,7 +26,7 @@
             if (!(obj is Token))
                 return false;
             var other = (Token)obj;
-            return Text == other.Text && StartPosition == other.StartPosition;
+            return Text == other.Text && StartPosition == other.StartPosition && HtmlTag==other.HtmlTag && HtmlAttribute==other.HtmlAttribute;
         }
 
         public override int GetHashCode()
