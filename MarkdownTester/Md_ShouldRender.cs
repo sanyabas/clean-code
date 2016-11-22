@@ -1,5 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
 using System.Text;
@@ -65,6 +64,39 @@ namespace MarkdownTester
             renderer.BaseAddress = "http://yandex.ru/";
             var expected =
                 "This is <a href=\"http://google.com/pictures\">absolute link</a> and <a href=\"http://yandex.ru/pictures.html\">relative</a> link";
+            var result = renderer.RenderToHtml(input);
+            result.Should().Be(expected);
+        }
+
+        [Test]
+        public void AddHtmlClass()
+        {
+            var input = @"This is _text_ with [link](http://google.com) added";
+            renderer.HtmlClass = "class";
+            var expected =
+                "This is <em class=\"class\">text</em> with <a href=\"http://google.com\" class=\"class\">link</a> added";
+            var result = renderer.RenderToHtml(input);
+            result.Should().Be(expected);
+        }
+
+        [Test]
+        public void Add_LineBreak()
+        {
+            var input = @"This is    
+line break";
+            var expected = "This is<br />line break";
+            var result = renderer.RenderToHtml(input);
+            result.Should().Be(expected);
+        }
+
+        [Test]
+        [TestCase("#H1 header", "<H1>H1 header</H1>")]
+        [TestCase("#    H1 header", "<H1>H1 header</H1>")]
+        [TestCase("##H2 header", "<H2>H2 header</H2>")]
+        [TestCase("##H2 header##", "<H2>H2 header</H2>")]
+        [TestCase("##H2 header##\r\ntext", "<H2>H2 header</H2>\r\ntext")]
+        public void Headers(string input,string expected)
+        {
             var result = renderer.RenderToHtml(input);
             result.Should().Be(expected);
         }

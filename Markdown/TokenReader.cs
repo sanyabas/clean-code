@@ -1,7 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Runtime.Remoting.Channels;
+﻿using System.Linq;
 using System.Text;
 
 namespace Markdown
@@ -17,15 +14,23 @@ namespace Markdown
         private const char ScreeningChar = '\\';
         private const char LinkTextOpeningChar = '[';
         private const char LinkTextClosingChar = ']';
-        private const char LinkAddressOpeningChar = '(';
         private const char LinkAddressClosingChar = ')';
+        private const char SpaceChar = ' ';
+        private const char CaretChar = '\r';
+        private const char NewLineChar = '\n';
+        private const char HeaderChar = '#';
         public string BaseAddress { get; }
-        private static readonly char[] NotPlainCharacters = {'_', '\\', '[',']','(',')'};
+        public string HtmlClass { get; }
+        private static readonly char[] NonPlainCharacters = { '_', '\\', '[', ']', '(', ')'};
 
-        public TokenReader(string text, string baseAddress = null)
+        private static readonly char[] ExtendedNonPlainCharacters =
+            NonPlainCharacters.Concat(new[] {SpaceChar, CaretChar}).ToArray();
+
+        public TokenReader(string text, string baseAddress = null, string htmlClass = null)
         {
             this.text = text;
             BaseAddress = baseAddress;
+            HtmlClass = htmlClass;
         }
 
         public Token ReadUntil(int startPosition, bool isScreening, params char[] stopChars)
@@ -40,29 +45,100 @@ namespace Markdown
                         result.Append(text[currentPosition + 1]);
                     return new Token(result.ToString(), previousPosision);
                 }
+                if (text[currentPosition] == ' ' && text[currentPosition + 1] == ' ')
+                {
+                    currentPosition += 2;
+                    return new Token(result.ToString(),previousPosision);
+                }
                 result.Append(text[currentPosition]);
             }
             return new Token(result.ToString(), previousPosision);
         }
 
+        public Token ReadWhile(int startPosition, bool isScreening, params char[] acceptableChars)
+        {
+            var previousPosition = currentPosition;
+            var result = new StringBuilder();
+            for (currentPosition = startPosition; currentPosition < text.Length; currentPosition++)
+            {
+                if (!acceptableChars.Contains(text[currentPosition]))
+                {
+                    if (isScreening && text[currentPosition] == ScreeningChar)
+                        result.Append(text[currentPosition + 1]);
+                    return new Token(result.ToString(), previousPosition);
+                }
+                result.Append(text[currentPosition]);
+            }
+            return new Token(result.ToString(),previousPosition);
+        }
+
         public Token ReadNextSurroundedToken()
         {
+            Token result;
             switch (text[currentPosition])
             {
                 case ScreeningChar:
-                    return SkipShadedToken();
+                    result = SkipShadedToken();
+                    break;
                 case LinkTextOpeningChar:
-                    return ReadLink();
+                    result = ReadLink();
+                    break;
                 case EmphasisChar:
-                    return LookAtNextCharacter();
+                    result = LookAtNextCharacter(EmphasisChar);
+                    break;
+                case CaretChar:
+                    result = ReadWindowsLineBreakToken();
+                    break;
+                case NewLineChar:
+                    result = ReadLinuxLineBreakToken();
+                    break;
+                case HeaderChar:
+                    result = ReadHeader();
+                    break;
                 default:
-                    return ReadSimpleToken();
+                    result = ReadSimpleToken();
+                    break;
             }
+            if (!string.IsNullOrEmpty(HtmlClass))
+                result.HtmlAttributes.Add("class", HtmlClass);
+            return result;
+        }
+
+        public Token ReadHeader()
+        {
+            var headerChars = ReadWhile(currentPosition, false, HeaderChar);
+            var spaces = ReadWhile(currentPosition, false, SpaceChar);
+            var headerLevel = headerChars.Text.Length;
+            var header = ReadUntil(currentPosition, false, HeaderChar, NewLineChar, CaretChar);
+            var headerClosing = ReadWhile(currentPosition + 1, false, HeaderChar);
+            header.HtmlTag = FormHeaderTag(headerLevel);
+            return header;
+        }
+
+        public string FormHeaderTag(int headerLevel)
+        {
+            return $"<H{headerLevel}>";
+        }
+
+        public Token ReadLinuxLineBreakToken()
+        {
+            if (text.Substring(currentPosition - 2, 2) != "  ")
+                return ReadUntil(currentPosition, false, NonPlainCharacters);
+            currentPosition++;
+            return new Token("<br />",currentPosition-2);
+        }
+
+        public Token ReadWindowsLineBreakToken()
+        {
+            if (text.Substring(currentPosition - 2, 2) != "  ")
+                return ReadUntil(currentPosition, false, NonPlainCharacters);
+            currentPosition+=2;
+            return new Token("<br />", currentPosition-2);
         }
 
         public Token ReadSimpleToken()
         {
-            var token = ReadUntil(currentPosition, false, NotPlainCharacters);
+            var token = ReadUntil(currentPosition, false, ExtendedNonPlainCharacters);
             return token;
         }
 
@@ -79,19 +155,15 @@ namespace Markdown
             var linkToken = ReadUntil(currentPosition + 2, false, LinkAddressClosingChar);
             currentPosition++;
             var link = !linkToken.Text.StartsWith("http://") ? CombineUrl(BaseAddress, linkToken.Text) : linkToken.Text;
-            var attribute = $"href=\"{link}\"";
             textToken.HtmlTag = LinkTag;
-            textToken.HtmlAttribute = attribute;
+            textToken.HtmlAttributes.Add("href", link);
             return textToken;
         }
 
-        public Token LookAtNextCharacter()
+        public Token LookAtNextCharacter(char previous)
         {
             var next = text[currentPosition + 1];
-            if (next == EmphasisChar)
-                return ReadBoldToken();
-            else
-                return ReadItalicToken();
+            return next == EmphasisChar ? ReadBoldToken() : ReadItalicToken();
         }
 
         public Token ReadItalicToken()

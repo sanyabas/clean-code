@@ -67,8 +67,8 @@ namespace MarkdownTester
             var expected = new Token(@"absolute link",0)
             {
                 HtmlTag = @"<a>",
-                HtmlAttribute = "href=\"http://google.com\""
             };
+            expected.HtmlAttributes["href"] = "http://google.com";
             result.Should().Be(expected);
         }
 
@@ -80,8 +80,8 @@ namespace MarkdownTester
             var expected = new Token("relative link", 0)
             {
                 HtmlTag="<a>",
-                HtmlAttribute = "href=\"http://google.com/src\""
             };
+            expected.HtmlAttributes["href"] = "http://google.com/src";
             result.Should().Be(expected);
         }
 
