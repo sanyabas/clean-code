@@ -7,8 +7,7 @@ namespace Markdown
         private readonly int finishPosition;
         public string Text { get; }
         public int StartPosition { get; }
-
-        public string HtmlTag { get; set; }
+        public List<string> HtmlTags { get; set; }
         public Dictionary<string,string> HtmlAttributes { get; set; }
 
         public Token(string text, int start)
@@ -17,6 +16,7 @@ namespace Markdown
             StartPosition = start;
             finishPosition = start + text.Length;
             HtmlAttributes=new Dictionary<string, string>();
+            HtmlTags = new List<string>();
         }
 
         public override string ToString()
@@ -29,7 +29,7 @@ namespace Markdown
             if (!(obj is Token))
                 return false;
             var other = (Token)obj;
-            return Text == other.Text && StartPosition == other.StartPosition && HtmlTag==other.HtmlTag;
+            return Text == other.Text && StartPosition == other.StartPosition;
         }
 
         public override int GetHashCode()

@@ -64,10 +64,7 @@ namespace MarkdownTester
         {
             var reader=new TokenReader(@"[absolute link](http://google.com)");
             var result = reader.ReadLink();
-            var expected = new Token(@"absolute link",0)
-            {
-                HtmlTag = @"<a>",
-            };
+            var expected = new Token(@"absolute link", 0);
             expected.HtmlAttributes["href"] = "http://google.com";
             result.Should().Be(expected);
         }
@@ -77,10 +74,7 @@ namespace MarkdownTester
         {
             var reader = new TokenReader(@"[relative link](/src)", "http://google.com");
             var result = reader.ReadLink();
-            var expected = new Token("relative link", 0)
-            {
-                HtmlTag="<a>",
-            };
+            var expected = new Token("relative link", 0);
             expected.HtmlAttributes["href"] = "http://google.com/src";
             result.Should().Be(expected);
         }

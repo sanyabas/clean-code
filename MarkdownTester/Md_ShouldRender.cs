@@ -102,6 +102,21 @@ line break";
         }
 
         [Test]
+        [TestCase(@"This is text
+    this is code
+This is text", @"This is text
+<pre><code>this is code</code></pre>
+This is text")]
+        [TestCase("This is text\r\n\tthis is code\r\nThis is text", @"This is text
+<pre><code>this is code</code></pre>
+This is text")]
+        public void CodeBlocks(string input, string expected)
+        {
+            var result = renderer.RenderToHtml(input);
+            result.Should().Be(expected);
+        }
+
+        [Test]
         public void Linearly()
         {
             var input = "_italic_ and __bold text__";
