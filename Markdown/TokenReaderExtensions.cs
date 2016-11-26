@@ -7,7 +7,7 @@ namespace Markdown
         public static IEnumerable<Token> ReadTokens(this TokenReader reader)
         {
             while (reader.IsNotEnded())
-                yield return reader.ReadNextSurroundedToken().SurroundWithHtmlTags();
+                yield return reader.ReadNextToken().SurroundWithHtmlTags();
         }
     }
 }

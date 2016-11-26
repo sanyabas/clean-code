@@ -23,10 +23,6 @@ namespace Markdown
                 resultToken = new Token($"{tag.Key}{resultToken.Text}{tag.Value}", token.StartPosition);
             return resultToken;
         }
-        //public static Token SurroundWithHtmlTag(this Token token)
-        //{
-        //    return token.SurroundWithHtmlTag(token.HtmlTag, TransformAttributesToStrings(token.HtmlAttributes));
-        //}
 
         public static Token SurroundWithHtmlTags(this Token token)
         {
@@ -47,5 +43,10 @@ namespace Markdown
                 tag => $"{tag[0]}/{tag.Substring(1)}");
         }
 
+        public static void AddCssClass(this Token token, string cssClass)
+        {
+            if (!string.IsNullOrEmpty(cssClass))
+                token.HtmlAttributes.Add("class", cssClass);
+        }
     }
 }

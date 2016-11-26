@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 
@@ -9,15 +10,27 @@ namespace Markdown
         private int currentPosition;
         private readonly string text;
         public string BaseAddress { get; }
-        public string HtmlClass { get; }
+        public string CssClass { get; }
+        private readonly Dictionary<char, Func<Token>> charsToFunctions;
 
-        public TokenReader(string text, string baseAddress = null, string htmlClass = null)
+        public TokenReader(string text, string baseAddress = null, string cssClass = null)
         {
             this.text = text;
             BaseAddress = baseAddress;
-            HtmlClass = htmlClass;
+            CssClass = cssClass;
+            charsToFunctions=new Dictionary<char, Func<Token>>();
+            InitializeDictionary();
         }
 
+        private void InitializeDictionary()
+        {
+            charsToFunctions[CharConstants.Screening] = SkipShadedToken;
+            charsToFunctions[CharConstants.LinkTextOpening] = ReadLink;
+            charsToFunctions[CharConstants.Emphasis] = LookAtNextCharacter;
+            charsToFunctions[CharConstants.Caret] = ReadWindowsLineBreakToken;
+            charsToFunctions[CharConstants.NewLine] = ReadLinuxLineBreakToken;
+            charsToFunctions[CharConstants.Header] = ReadHeader;
+        }
         public Token ReadUntil(int startPosition, bool isScreening, params char[] stopChars)
         {
             var previousPosision = currentPosition;
@@ -67,36 +80,13 @@ namespace Markdown
             return new Token(result.ToString(),previousPosition);
         }
 
-        public Token ReadNextSurroundedToken()
+        public Token ReadNextToken()
         {
-            Token result;
-            switch (text[currentPosition])
-            {
-                case CharConstants.Screening:
-                    result = SkipShadedToken();
-                    break;
-                case CharConstants.LinkTextOpening:
-                    result = ReadLink();
-                    break;
-                case CharConstants.Emphasis:
-                    result = LookAtNextCharacter(CharConstants.Emphasis);
-                    break;
-                case CharConstants.Caret:
-                    result = ReadWindowsLineBreakToken();
-                    break;
-                case CharConstants.NewLine:
-                    result = ReadLinuxLineBreakToken();
-                    break;
-                case CharConstants.Header:
-                    result = ReadHeader();
-                    break;
-                default:
-                    result = ReadSimpleToken();
-                    break;
-            }
-            if (!string.IsNullOrEmpty(HtmlClass))
-                result.HtmlAttributes.Add("class", HtmlClass);
+            var currentChar = text[currentPosition];
+            var result = !charsToFunctions.ContainsKey(currentChar) ? ReadSimpleToken() : charsToFunctions[currentChar]();
+            result.AddCssClass(CssClass);
             return result;
+
         }
 
         public Token ReadHeader()
@@ -186,7 +176,7 @@ namespace Markdown
             return textToken;
         }
 
-        public Token LookAtNextCharacter(char previous)
+        public Token LookAtNextCharacter()
         {
             var next = text[currentPosition + 1];
             return next == CharConstants.Emphasis ? ReadBoldToken() : ReadItalicToken();
