@@ -18,19 +18,17 @@ namespace Markdown
             this.text = text;
             BaseAddress = baseAddress;
             CssClass = cssClass;
-            charsToFunctions=new Dictionary<char, Func<Token>>();
-            InitializeDictionary();
+            charsToFunctions = new Dictionary<char, Func<Token>>
+            {
+                [CharConstants.Screening] = SkipShadedToken,
+                [CharConstants.LinkTextOpening] = ReadLink,
+                [CharConstants.Emphasis] = LookAtNextCharacter,
+                [CharConstants.Caret] = ReadWindowsLineBreakToken,
+                [CharConstants.NewLine] = ReadLinuxLineBreakToken,
+                [CharConstants.Header] = ReadHeader
+            };
         }
-
-        private void InitializeDictionary()
-        {
-            charsToFunctions[CharConstants.Screening] = SkipShadedToken;
-            charsToFunctions[CharConstants.LinkTextOpening] = ReadLink;
-            charsToFunctions[CharConstants.Emphasis] = LookAtNextCharacter;
-            charsToFunctions[CharConstants.Caret] = ReadWindowsLineBreakToken;
-            charsToFunctions[CharConstants.NewLine] = ReadLinuxLineBreakToken;
-            charsToFunctions[CharConstants.Header] = ReadHeader;
-        }
+        
         public Token ReadUntil(int startPosition, bool isScreening, params char[] stopChars)
         {
             var previousPosision = currentPosition;
@@ -132,8 +130,6 @@ namespace Markdown
             var offset=1;
             if (text[currentPosition+2] == CharConstants.Space)
                 offset = 4;
-            else if (text[currentPosition+2] == CharConstants.Tabulation)
-                offset = 1;
             var token = ReadUntil(currentPosition + offset + 2, false, CharConstants.Caret, CharConstants.NewLine);
             while (text[currentPosition] == CharConstants.Caret)
             {
