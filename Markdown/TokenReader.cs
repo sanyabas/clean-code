@@ -46,7 +46,7 @@ namespace Markdown
                         result.Append(text[currentPosition + 1]);
                     break;
                 }
-                if (text.Substring(currentPosition,2)=="  ")
+                if (currentPosition<text.Length-2 && text.Substring(currentPosition,2)=="  ")
                 {
                     currentPosition += 2;
                     break;
