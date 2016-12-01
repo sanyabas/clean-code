@@ -102,14 +102,8 @@ line break";
         }
 
         [Test]
-        [TestCase(@"This is text
-    this is code
-This is text", @"This is text
-<pre><code>this is code</code></pre>
-This is text")]
-        [TestCase("This is text\r\n\tthis is code\r\nThis is text", @"This is text
-<pre><code>this is code</code></pre>
-This is text")]
+        [TestCase("This is text\r\n    this is code\r\nThis is text", "This is text\r\n<pre><code>this is code</code></pre>\r\nThis is text")]
+        [TestCase("This is text\r\n\tthis is code\r\nThis is text", "This is text\r\n<pre><code>this is code</code></pre>\r\nThis is text")]
         public void CodeBlocks(string input, string expected)
         {
             var result = renderer.RenderToHtml(input);
