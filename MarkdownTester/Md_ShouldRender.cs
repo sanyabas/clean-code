@@ -13,7 +13,7 @@ namespace MarkdownTester
     {
 
         private Md renderer;
-        private const int PerfomanceStep=1000;
+        private const int PerfomanceStep = 1000;
         private const double LinearBound = 1;
 
         [SetUp]
@@ -95,14 +95,14 @@ line break";
         [TestCase("##H2 header", "<H2>H2 header</H2>")]
         [TestCase("##H2 header##", "<H2>H2 header</H2>")]
         [TestCase("##H2 header##\r\ntext", "<H2>H2 header</H2>\r\ntext")]
-        public void Headers(string input,string expected)
+        public void Headers(string input, string expected)
         {
             var result = renderer.RenderToHtml(input);
             result.Should().Be(expected);
         }
 
         [Test]
-        [TestCase("This is text\r\n    this is code\r\nThis is text", "This is text\r\n<pre><code>this is code</code></pre>\r\nThis is text")]
+        [TestCase("This is text\n    this is code\r\nThis is text", "This is text\n<pre><code>this is code</code></pre>\r\nThis is text")]
         [TestCase("This is text\r\n\tthis is code\r\nThis is text", "This is text\r\n<pre><code>this is code</code></pre>\r\nThis is text")]
         public void CodeBlocks(string input, string expected)
         {
@@ -116,7 +116,7 @@ line break";
             var input = "_italic_ and __bold text__";
             var results = new List<double>();
             var inputDelta = Repeat("_italic_ and __bold text__", 1000);
-            for (var i = 1; i < 6000; i+=PerfomanceStep)
+            for (var i = 1; i < 6000; i += PerfomanceStep)
             {
                 var sw = Stopwatch.StartNew();
                 renderer.RenderToHtml(input);
@@ -143,12 +143,12 @@ line break";
         }
         private double[] GetDerivative(double[] results, int argDelta)
         {
-            var result=new List<double>();
-            for (var i = 0; i < results.Length-2; i++)
+            var result = new List<double>();
+            for (var i = 0; i < results.Length - 2; i++)
             {
-                var previousDelta = results[i+1] - results[i];
-                var currentDelta = results[i+2] - results[i +1];
-                result.Add((currentDelta - previousDelta)/argDelta);
+                var previousDelta = results[i + 1] - results[i];
+                var currentDelta = results[i + 2] - results[i + 1];
+                result.Add((currentDelta - previousDelta) / argDelta);
             }
             return result.ToArray();
         }

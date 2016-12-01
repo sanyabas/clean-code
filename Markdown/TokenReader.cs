@@ -28,7 +28,7 @@ namespace Markdown
                 [CharConstants.Header] = ReadHeader
             };
         }
-        
+
         public Token ReadUntil(int startPosition, bool isScreening, params char[] stopChars)
         {
             var previousPosision = currentPosition;
@@ -37,7 +37,7 @@ namespace Markdown
             {
                 if (IsPrecoding())
                 {
-                    result.Append(text.Substring(currentPosition, 2));
+                    result.Append(text.Substring(currentPosition, text[currentPosition] == CharConstants.NewLine ? 1 : 2));
                     break;
                 }
                 if (stopChars.Contains(text[currentPosition]))
@@ -46,7 +46,7 @@ namespace Markdown
                         result.Append(text[currentPosition + 1]);
                     break;
                 }
-                if (currentPosition<text.Length-2 && text.Substring(currentPosition,2)=="  ")
+                if (currentPosition < text.Length - 2 && text.Substring(currentPosition, 2) == "  ")
                 {
                     currentPosition += 2;
                     break;
@@ -58,7 +58,7 @@ namespace Markdown
 
         private bool IsPrecoding()
         {
-            return currentPosition + 2 < text.Length && text[currentPosition + 1] == CharConstants.NewLine && (text[currentPosition + 2] == CharConstants.Space || text[currentPosition + 2] == '\t');
+            return currentPosition + 2 < text.Length && (text[currentPosition] == CharConstants.Caret && text[currentPosition + 1] == CharConstants.NewLine || text[currentPosition] == CharConstants.NewLine) && (text[currentPosition + 2] == CharConstants.Space || text[currentPosition + 2] == '\t');
         }
 
         public Token ReadWhile(int startPosition, bool isScreening, params char[] acceptableChars)
@@ -75,7 +75,7 @@ namespace Markdown
                 }
                 result.Append(text[currentPosition]);
             }
-            return new Token(result.ToString(),previousPosition);
+            return new Token(result.ToString(), previousPosition);
         }
 
         public Token ReadNextToken()
@@ -106,9 +106,15 @@ namespace Markdown
         public Token ReadLinuxLineBreakToken()
         {
             if (text.Substring(currentPosition - 2, 2) != "  ")
-                return ReadUntil(currentPosition, false, CharConstants.NonPlainCharacters);
+            {
+                var nextFourCharacters = text.Substring(currentPosition + 1, 4);
+                if (nextFourCharacters == "    " || nextFourCharacters[0] == '\t')
+                    return ReadPreCode();
+                else
+                    return ReadUntil(currentPosition, false, CharConstants.NonPlainCharacters);
+            }
             currentPosition++;
-            return new Token("<br />",currentPosition-2);
+            return new Token("<br />", currentPosition - 2);
         }
 
         public Token ReadWindowsLineBreakToken()
@@ -121,15 +127,17 @@ namespace Markdown
                 else
                     return ReadUntil(currentPosition, false, CharConstants.NonPlainCharacters);
             }
-            currentPosition+=2;
-            return new Token("<br />", currentPosition-2);
+            currentPosition += 2;
+            return new Token("<br />", currentPosition - 2);
         }
 
         public Token ReadPreCode()
         {
-            var offset=1;
-            if (text[currentPosition+2] == CharConstants.Space)
+            var offset = 1;
+            if (text[currentPosition + 2] == CharConstants.Space)
                 offset = 4;
+            if (text[currentPosition] == CharConstants.NewLine)
+                offset--;
             var token = ReadUntil(currentPosition + offset + 2, false, CharConstants.Caret, CharConstants.NewLine);
             while (text[currentPosition] == CharConstants.Caret)
             {
@@ -141,7 +149,7 @@ namespace Markdown
                 }
                 else
                 {
-                    token.HtmlTags.AddRange(new [] { HtmlTags.Code, HtmlTags.Pre});
+                    token.HtmlTags.AddRange(new[] { HtmlTags.Code, HtmlTags.Pre });
                     return token;
                 }
             }
